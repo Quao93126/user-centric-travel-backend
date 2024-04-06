@@ -11,3 +11,7 @@
 ## Contact us
 
 Need to  check the .env file. 
+
+Need to create databasse travelBio in mysql
+
+UPloaded Env file.
