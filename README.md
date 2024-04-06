@@ -14,4 +14,8 @@ Need to  check the .env file.
 
 Need to create databasse travelBio in mysql
 
+Write your skype cid.
+
+Will try with other.
+
 UPloaded Env file.
