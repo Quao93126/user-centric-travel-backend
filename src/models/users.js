@@ -1,7 +1,6 @@
 const db = require('../configs/db')
 const users = {
   register: data => {
-    console.log("dddd")
     return new Promise((resolve, reject) => {
       db.query('SHOW TABLES LIKE "users"', (err, results) => {
         if (err) {
@@ -18,6 +17,9 @@ const users = {
                     location VARCHAR(255),
                     refreshToken VARCHAR(255),
                     image VARCHAR(255),
+                    score VARCHAR(255),
+                    country VARCHAR(255),
+                    city VARCHAR(255),
                     userrole VARCHAR(255),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )`
@@ -148,7 +150,7 @@ const users = {
   getAll: () => {
     return new Promise((resolve, reject) => {
       db.query(
-        `SELECT * FROM users INNER JOIN location ON users.idlocation = location.idlocation`,
+        `SELECT * FROM users`,
         (err, result) => {
           if (err) {
             reject(new Error(err))
@@ -187,11 +189,11 @@ const users = {
       )
     })
   },
-  update: (data, iduser) => {
+  update: (data) => {
     return new Promise((resolve, reject) => {
       db.query(
-        `UPDATE users SET ? WHERE iduser=?`,
-        [data, iduser],
+        `UPDATE users SET name=?, score=?, userrole=? WHERE email=?`,
+        [data.name, data.score, data.userrole, data.email],
         (err, result) => {
           if (err) {
             console.log(new Error(err))
@@ -207,6 +209,20 @@ const users = {
     return new Promise((resolve, reject) => {
       db.query(
         `DELETE FROM users WHERE iduser = '${iduser}'`,
+        (err, result) => {
+          if (err) {
+            reject(new Error(err))
+          } else {
+            resolve(result)
+          }
+        }
+      )
+    })
+  },
+  deleteUser: idEmail => {
+    return new Promise((resolve, reject) => {
+      db.query(
+        `DELETE FROM users WHERE email = '${idEmail}'`,
         (err, result) => {
           if (err) {
             reject(new Error(err))
@@ -244,52 +260,6 @@ const users = {
           }
         }
       })
-    })
-  },
-  checkTelegramUser: useridtelegram => {
-    return new Promise((resolve, reject) => {
-      console.log('useridtelegram ', useridtelegram)
-      db.query(
-        `SELECT COUNT(*) AS count FROM users  WHERE useridtelegram=${useridtelegram}`,
-        (err, result) => {
-          if (err) {
-            reject(new Error(err))
-          } else {
-            resolve(result[0])
-          }
-        }
-      )
-    })
-  },
-  getTelegramUser: useridtelegram => {
-    return new Promise((resolve, reject) => {
-      console.log('useridtelegram ', useridtelegram)
-      db.query(
-        `SELECT *FROM users WHERE useridtelegram='${useridtelegram}'`,
-        (err, result) => {
-          if (err) {
-            reject(new Error(err))
-          } else {
-            resolve(result)
-          }
-        }
-      )
-    })
-  },
-  insertTelegramUser: data => {
-    return new Promise((resolve, reject) => {
-      console.log('data')
-      console.log(data)
-      db.query(
-        `INSERT INTO users (username,  useridtelegram ,active) VALUES ('${data.username}', '${data.useridtelegram}', '${data.active}')`,
-        (err, result) => {
-          if (err) {
-            reject(new Error(err))
-          } else {
-            resolve(result)
-          }
-        }
-      )
     })
   },
   addCountry: data => {
@@ -332,6 +302,22 @@ const users = {
       })
     })
   },
+  updateCountry: (data, prev) => {
+    return new Promise((resolve, reject) => {
+      db.query(
+        `UPDATE country SET ? WHERE title=?`,
+        [data, prev],
+        (err, result) => {
+          if (err) {
+            console.log(new Error(err))
+            reject(new Error(err))
+          } else {
+            resolve(result)
+          }
+        }
+      )
+    })
+  },
   getallCountry: () =>{
     return new Promise((resolve,reject) => {
         db.query(`SELECT *FROM country`, (err,result) => {
@@ -341,6 +327,57 @@ const users = {
                 resolve(result)
             }
         })
+    })
+  },
+  getAllCountryCityScore: (id) =>{
+    return new Promise((resolve,reject) => {
+        db.query(`SELECT country, city, score FROM users WHERE id = ?`, id, (err,result) => {
+            if(err){
+                reject(new Error(err))
+            }else{
+                resolve(result)
+            }
+        })
+    })
+  },
+  addCountryCityScore: data => {
+    return new Promise((resolve, reject) => {
+      db.query('SHOW TABLES LIKE "users"', (err, results) => {
+        if (err) {
+          reject(new Error(err))
+        } else {
+          // db.query('INSERT INTO users SET ?', data, (err, result) => {
+          //   if (err) {
+          //     reject(new Error(err))
+          //   } else {
+          //     resolve(result)
+          //   }
+          // })
+          db.query('SELECT * FROM users WHERE id = ?', data.id, (err, rows) => {
+            if (err) {
+              reject(new Error(err))
+            } else {
+              if (rows.length > 0) {
+                // const userId = rows[0].id; // Assuming you have an 'id' column in your users table
+                // Update the country and city for the matched row
+                db.query('UPDATE users SET country = ?, city = ?, score = ? WHERE id = ?', [data.country, data.city, data.score, data.id], (err, result) => {
+                  if (err) {
+                    reject(new Error(err))
+                  } else {
+                    resolve(result)
+                  }
+                });
+              } else {
+                console.log('User with name "fff" not found.');
+              }
+            }
+          });
+
+
+
+          
+        }
+      })
     })
   },
   addCity: data => {

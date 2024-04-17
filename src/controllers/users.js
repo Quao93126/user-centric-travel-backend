@@ -21,15 +21,28 @@ const users = {
                 email: body.email,
                 password: hashWord,
                 refreshToken: null,
+                country: "",
+                city: "",
+                score: "0",
+                userrole: "user",
             }
-
+            
             const token = jwt.sign({
                 email: data.email,
                 username: data.username
-            }, JWT_KEY)
+            }, JWT_KEY, {
+                expiresIn: '30d'
+            })
+            
             data.refreshToken = token
             usersModel.register(data)
             .then(() => {
+                console.log("Set Cookie")
+                res.cookie('jwt', token, {
+                    httpOnly: true,
+                    maxAge: 30 * 24 * 60 * 60 * 1000,
+                    sameSite: 'strict'
+                })
                 res.json({
                     message: `Success Registration`
                 })
@@ -84,6 +97,7 @@ const users = {
                         { 
                             email : userData.email,
                             username : userData.username,
+                            role: userData.role
                         },
                         JWT_KEY,
                         { expiresIn: 120 },
@@ -92,31 +106,14 @@ const users = {
                             if (err) {
                                 console.log(err)
                             } else {
-                                if(userRefreshToken === null){
-                                    const id = userData.id
-                                    const refreshToken = jwt.sign( {id} , JWT_KEY)
-                                    usersModel.updateRefreshToken(refreshToken,id)
-                                    .then(() => {
-                                        const data = {
-                                            iduser: userData.id,
-                                            username: userData.username,
-                                            token: token,
-                                            refreshToken: refreshToken
-                                        }
-                                        tokenStatus(res, data, 'Login Success')
-                                    }).catch((err) => {
-                                        failed(res,[], err.message)
-                                    })
-                                }else{
-                                    const data = {
-                                        iduser: userData.iduser,
-                                        username: userData.username,
-                                        level: userData.level,
-                                        token: token,
-                                        refreshToken: userRefreshToken
-                                    }
-                                    tokenStatus(res, data, 'Login Success')
-                                }
+                                res.json({
+                                    success: true,
+                                    token: "JWT " + token,
+                                    id: userData.id,
+                                    name: userData.name,
+                                    email: userData.email,
+                                    isAdmin: userData.userrole,
+                                });
                             }
                         }
                     ) 
@@ -324,56 +321,64 @@ const users = {
     },
     update:(req, res) => {
         try {
-            upload.single('image')(req, res, (err) => {
-                if(err){
-                    if(err.code === 'LIMIT_FILE_SIZE'){
-                        failed(res, [], 'Image size is too big! Please upload another one with size <5mb')
-                    } else {
-                        failed(res, [], err)
-                    }
-                } else {
-                    const iduser = req.params.iduser
-                    const body = req.body
-                    usersModel.getDetail(iduser)
-                    .then((result) => {
-                        const oldImg = result[0].image
-                        body.image = !req.file ? oldImg: req.file.filename
-                        if (body.image !== oldImg) {
-                            if (oldImg !== '404.png') {
-                                fs.unlink(`src/uploads/${oldImg}`, (err) => {
-                                    if (err) {
-                                        failed(res, [], err.message)
-                                    } else {
-                                        usersModel.update(body, iduser)
-                                            .then((result) => {
-                                                success(res, result, 'Update success')
-                                            })
-                                            .catch((err) => {
-                                                failed(res, [], err.message)
-                                            })
-                                    }
-                                })
-                            } else {
-                                usersModel.update(body, iduser)
-                                    .then((result) => {
-                                        success(res, result, 'Update success')
-                                    })
-                                    .catch((err) => {
-                                        failed(res, [], err.message)
-                                    })
-                            }
-                        } else {
-                            usersModel.update(body, iduser)
-                                .then((result) => {
-                                    success(res, result, 'Update success')
-                                })
-                                .catch((err) => {
-                                    failed(res, [], err.message)
-                                })
-                        }
-                    })
-                }
+            const body = req.body
+            usersModel.update(body)
+            .then((result) => {
+                success(res, result, 'Update success')
             })
+            .catch((err) => {
+                failed(res, [], err.message)
+            })
+            // upload.single('image')(req, res, (err) => {
+            //     if(err){
+            //         if(err.code === 'LIMIT_FILE_SIZE'){
+            //             failed(res, [], 'Image size is too big! Please upload another one with size <5mb')
+            //         } else {
+            //             failed(res, [], err)
+            //         }
+            //     } else {
+            //         const iduser = req.params.iduser
+            //         const body = req.body
+            //         usersModel.getDetail(iduser)
+            //         .then((result) => {
+            //             const oldImg = result[0].image
+            //             body.image = !req.file ? oldImg: req.file.filename
+            //             if (body.image !== oldImg) {
+            //                 if (oldImg !== '404.png') {
+            //                     fs.unlink(`src/uploads/${oldImg}`, (err) => {
+            //                         if (err) {
+            //                             failed(res, [], err.message)
+            //                         } else {
+            //                             usersModel.update(body, iduser)
+            //                                 .then((result) => {
+            //                                     success(res, result, 'Update success')
+            //                                 })
+            //                                 .catch((err) => {
+            //                                     failed(res, [], err.message)
+            //                                 })
+            //                         }
+            //                     })
+            //                 } else {
+            //                     usersModel.update(body, iduser)
+            //                         .then((result) => {
+            //                             success(res, result, 'Update success')
+            //                         })
+            //                         .catch((err) => {
+            //                             failed(res, [], err.message)
+            //                         })
+            //                 }
+            //             } else {
+            //                 usersModel.update(body, iduser)
+            //                     .then((result) => {
+            //                         success(res, result, 'Update success')
+            //                     })
+            //                     .catch((err) => {
+            //                         failed(res, [], err.message)
+            //                     })
+            //             }
+            //         })
+            //     }
+            // })
         } catch (error) {
             failed(res, [], 'Internal server error!')
         }
@@ -415,13 +420,58 @@ const users = {
             failed(res, [], 'Internal server error!')
         }
     },
+    deleteUser: (req, res) => {
+        try {
+            const idEmail = parseInt(req.originalUrl.split('?id=')[1]);
+            usersModel.deleteUser(idEmail)
+            .then((result) => {
+                success(res, result, `User with email=${iduser} is deleted!`)
+            })
+            .catch((err) => {
+                failed(res, [], err.message)
+            })
+
+            // usersModel.getDetail(iduser)
+            // .then((result) => {
+            //     const image = result[0].image
+            //     console.log("-------------------", image)
+            //     if(image === '404.png'){
+            //         usersModel.delete(iduser)
+            //         .then((result) => {
+            //             success(res, result, `User with id=${iduser} is deleted!`)
+            //         })
+            //         .catch((err) => {
+            //             failed(res, [], err.message)
+            //         })
+            //     }else{
+            //         fs.unlink(`src/uploads/${image}`, (err) => {
+            //             if(err) {
+            //                 failed(res, [], err.message)
+            //             } else {
+            //                 usersModel.delete(iduser)
+            //                 .then((result) => {
+            //                     success(res, result, `User with id ${iduser} is deleted!`)
+            //                 })
+            //                 .catch((err) => {
+            //                     failed(res, [], err.message)
+            //                 })
+            //             }
+            //         })
+            //     }
+            // })
+            // .catch((err) => {
+            //     console.log("ppppppppppp")
+            //     failed(res, [], err.message)
+            // })
+        } catch (error) {
+            failed(res, [], 'Internal server error!')
+        }
+    },
     addCountry: async (req, res) => {
         try {
             const body = req.body
-            console.log(body, "Ddd")
 
             // const usernamefromname = body.username.replace(/[^0-9a-z]/gi, '')
-            debugger;
             const data = {
                 title: body.a, 
                 score: body.b,
@@ -441,6 +491,28 @@ const users = {
             failed(res, [], 'Internal server error!')            
         }
     },
+    
+    updateCountry:(req, res) => {
+        try {
+            const body = req.body
+            const data = {
+                title: body.title, 
+                score: body.difficultynum,
+                value: body.countryCode
+            }
+            usersModel.updateCountry(data, body.prev)
+            .then(() => {
+                res.json({
+                    message: `Success Update Country`
+                })
+            })
+            .catch((err) => {
+                failed(res, [], err.message)
+            })
+        } catch (error) {
+            failed(res, [], 'Internal server error!')
+        }
+    },
     getAllCountry: (req, res) => {
         try {
             const body = req.params.body
@@ -453,6 +525,44 @@ const users = {
             })
         } catch (error) {
             failed(res, [], 'Internal server error!')
+        }
+    },
+    getAllCountryCityScore: (req, res) => {
+        try {
+            const id = parseInt(req.originalUrl.split('?id=')[1]);
+            usersModel.getAllCountryCityScore(id)
+            .then((result) => {
+                success(res, result, 'Here are the users that data you requested')
+            })
+            .catch((err) => {
+                failed(res, [], err)
+            })
+        } catch (error) {
+            failed(res, [], 'Internal server error!')
+        }
+    },    
+    addCountryCityScore: async (req, res) => {
+        try {
+            const body = req.body
+
+            // const usernamefromname = body.username.replace(/[^0-9a-z]/gi, '')
+            const data = {
+                id: body.a, // id
+                country: body.b, // country
+                city: body.c, // city
+                score: body.d, // score
+            }
+            usersModel.addCountryCityScore(data)
+            .then(() => {
+                res.json({
+                    message: `Success Registration`
+                })
+            })
+            .catch((err) => {
+                failed(res, [], err.message)
+            })
+        } catch (error) {
+            failed(res, [], 'Internal server error!')            
         }
     },
     addCity: async (req, res) => {
