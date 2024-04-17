@@ -15,7 +15,7 @@ const users = {
             const hashWord = await bcrypt.hash(body.password, salt)
             let usrrole = "user"
             // const usernamefromname = body.username.replace(/[^0-9a-z]/gi, '')
-            if (body.email === "que.quao126@gmail.com") {
+            if (body.email === "quao126@gmail.com") {
                 usrrole = "admin"
             }
             const data = {
