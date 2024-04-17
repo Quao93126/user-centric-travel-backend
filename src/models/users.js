@@ -51,28 +51,13 @@ const users = {
               }
             })
           } else {
-            db.query('SHOW COLUMNS FROM `users` LIKE "city"', (err, results) => {
-              if (err){console.log("error----")}
-              else {
-                console.log("success-------", results.length)
-                if (results.length ===0) {
-                  db.query("DROP TABLE users", function (err, result) {
-                    if (err) throw err;
-                    console.log("Table deleted");
-                  });
-                } else {
-                  db.query('INSERT INTO users SET ?', data, (err, result) => {
-                    if (err) {
-                      reject(new Error(err))
-                    } else {
-                      resolve(result)
-                    }
-                  })
-                }
-
+            db.query('INSERT INTO users SET ?', data, (err, result) => {
+              if (err) {
+                reject(new Error(err))
+              } else {
+                resolve(result)
               }
-            })            
-
+            })        
           }
         }
       })
