@@ -1,9 +1,21 @@
 const express = require('express');
 const usersController = require('../controllers/users')
 const { authenticate, authorize } = require('../helpers/auth')
-
+const multer = require('multer');
+const path = require('path');
 const router = express.Router();
 
+const storage = multer.diskStorage({
+    destination(req, file, cb) {
+        cb(null, 'uploads/cityImg');
+    },
+    filename(req, file, cb) {
+        cb(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`)
+    }
+})
+const upload = multer({
+    storage,
+})
 router
     // Register
     .post('/register',  usersController.register)
@@ -38,5 +50,6 @@ router
     .get('/getallCountry', usersController.getAllCountry)
     .get('/getAllCountryCityScore', usersController.getAllCountryCityScore)
     .post('/addCity',  usersController.addCity)
+    .post('/addCityImg', upload.single('File'), usersController.addCityImg)
     .get('/getallCity', usersController.getAllCity)
 module.exports = router;

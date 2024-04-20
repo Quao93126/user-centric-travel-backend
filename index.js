@@ -3,6 +3,7 @@ const cors = require('cors')
 const ejs = require('ejs')
 const path = require('path')
 const bodyParser = require('body-parser')
+const uploadsRouter = require('./src/routes/uploads')
 const usersRouter = require('./src/routes/users')
 const locationRouter = require('./src/routes/location')
 const transactionRouter = require('./src/routes/transaction')
@@ -34,7 +35,10 @@ app.use(cors(corsOptions))
 app.use('/users', usersRouter)
 app.use('/location', locationRouter)
 app.use('/transaction', transactionRouter)
-
+app.use('/uploads', uploadsRouter)
+app.get('/', (req, res) => {
+  res.send("ffff");
+});
 app.listen(PORT, () => {
     console.log(`App is running at port ${PORT}`)
 });

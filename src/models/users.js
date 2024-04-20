@@ -406,7 +406,8 @@ const users = {
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     cityname VARCHAR(255),
                     score VARCHAR(255),
-                    country VARCHAR(255)
+                    country VARCHAR(255),
+                    imgsrc VARCHAR(255)
                 )`
             db.query(createTableQuery, (err, result) => {
               if (err) {

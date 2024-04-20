@@ -576,7 +576,8 @@ const users = {
             const data = {
                 cityname: body.city, 
                 score: body.difficultyScore,
-                country: body.country
+                country: body.country,
+                imgSrc: body.imgsrc
             }
 
             usersModel.addCity(data)
@@ -588,6 +589,16 @@ const users = {
             .catch((err) => {
                 failed(res, [], err.message)
             })
+        } catch (error) {
+            failed(res, [], 'Internal server error!')            
+        }
+    },
+    addCityImg: async (req, res) => {
+        try {
+            res.json({
+                path: req.file.filename
+            })
+            
         } catch (error) {
             failed(res, [], 'Internal server error!')            
         }
