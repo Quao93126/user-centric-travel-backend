@@ -396,43 +396,47 @@ const users = {
   },
   addCity: data => {
     return new Promise((resolve, reject) => {
-      db.query('SHOW TABLES LIKE "city"', (err, results) => {
-        if (err) {
-          reject(new Error(err))
-        } else {
-          if (results.length === 0) {
-            const createTableQuery = `
-                CREATE TABLE city (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    cityname VARCHAR(255),
-                    score VARCHAR(255),
-                    country VARCHAR(255),
-                    imgsrc VARCHAR(255)
-                )`
-            db.query(createTableQuery, (err, result) => {
-              if (err) {
-                reject(new Error(err))
-              } else {
-                db.query('INSERT INTO city SET ?', data, (err, result) => {
-                  if (err) {
-                    reject(new Error(err))
-                  } else {
-                    resolve(result)
-                  }
-                })
-              }
-            })
-          } else {
-            db.query('INSERT INTO city SET ?', data, (err, result) => {
-              if (err) {
-                reject(new Error(err))
-              } else {
-                resolve(result)
-              }
-            })
-          }
-        }
+      
+      db.query('DROP TABLE city', (err, results) => {
+        console.log("fffd");
       })
+      // db.query('SHOW TABLES LIKE "city"', (err, results) => {
+      //   if (err) {
+      //     reject(new Error(err))
+      //   } else {
+      //     if (results.length === 0) {
+      //       const createTableQuery = `
+      //           CREATE TABLE city (
+      //               id INT AUTO_INCREMENT PRIMARY KEY,
+      //               cityname VARCHAR(255),
+      //               score VARCHAR(255),
+      //               country VARCHAR(255),
+      //               imgsrc VARCHAR(255)
+      //           )`
+      //       db.query(createTableQuery, (err, result) => {
+      //         if (err) {
+      //           reject(new Error(err))
+      //         } else {
+      //           db.query('INSERT INTO city SET ?', data, (err, result) => {
+      //             if (err) {
+      //               reject(new Error(err))
+      //             } else {
+      //               resolve(result)
+      //             }
+      //           })
+      //         }
+      //       })
+      //     } else {
+      //       db.query('INSERT INTO city SET ?', data, (err, result) => {
+      //         if (err) {
+      //           reject(new Error(err))
+      //         } else {
+      //           resolve(result)
+      //         }
+      //       })
+      //     }
+      //   }
+      // })
     })
   },
   getallCity: () =>{
